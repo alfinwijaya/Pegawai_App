@@ -1,8 +1,14 @@
-﻿namespace TesMandiri.Models;
+﻿using System.Text.Json.Serialization;
 
-public class Task
+namespace TesMandiri.Models;
+
+public class TaskBase
 {
-    public int TaskId { get; set; }
-    public string TaskName { get; set; } = string.Empty;
+    public string TaskCode { get; set; } = string.Empty;
+    public string? TaskName { get; set; }
+}
+
+public class Task : TaskBase
+{
     public List<EmployeeBase> Employee { get; set; } = new();
 }

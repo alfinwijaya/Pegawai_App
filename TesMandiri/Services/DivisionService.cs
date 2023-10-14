@@ -10,34 +10,34 @@ using System.Xml.Linq;
 
 namespace TesMandiri.Services;
 
-public class EmployeeService : IMasterInt<EmployeeBase>
+public class DivisionService : IMasterString<DivisionBase>
 {
     SqlConnection conn;
-    public EmployeeService(IOptions<Setting> setting)
+    public DivisionService(IOptions<Setting> setting)
     {
         conn = new SqlConnection(setting.Value.ConnectionString);
     }
 
-    public List<EmployeeBase> Get()
+    public List<DivisionBase> Get()
     {
         conn.Open();
-        List<EmployeeBase> employees = new();
+        List<DivisionBase> divisions = new();
         try
         {
-            SqlCommand command = new SqlCommand("Select id, [name] empName from Employee", conn);
+            SqlCommand command = new SqlCommand("Select code, [name] from Division", conn);
             SqlDataReader reader = command.ExecuteReader();
             
             while (reader.Read())
             {
-                EmployeeBase employee = new();
-                employee.EmployeeId = Convert.ToInt32(reader["id"]);
-                employee.EmployeeName = Convert.ToString(reader["empName"]) ?? string.Empty;
+                DivisionBase division = new();
+                division.DivisionCode = Convert.ToString(reader["code"]) ?? string.Empty;
+                division.DivisionName = Convert.ToString(reader["name"]) ?? string.Empty;
 
-                employees.Add(employee);
+                divisions.Add(division);
             }
             conn.Close();
 
-            return employees;
+            return divisions;
         }
         catch
         {
@@ -49,24 +49,24 @@ public class EmployeeService : IMasterInt<EmployeeBase>
         }
     }
 
-    public EmployeeBase GetById(int id)
+    public DivisionBase GetById(string id)
     {
         conn.Open();
-        EmployeeBase employee = new();
+        DivisionBase division = new();
         try
         {
-            SqlCommand command = new SqlCommand("Select id, [name] empName from Employee where id = @Id", conn);
-            command.Parameters.Add(new SqlParameter("Id", id));
+            SqlCommand command = new SqlCommand("Select code, [name] from Division where code = @Code", conn);
+            command.Parameters.Add(new SqlParameter("Code", id));
 
             SqlDataReader reader = command.ExecuteReader();
             if (reader.Read())
             {
-                employee.EmployeeId = Convert.ToInt32(reader["id"]);
-                employee.EmployeeName = Convert.ToString(reader["empName"]) ?? string.Empty;
+                division.DivisionCode = Convert.ToString(reader["code"]) ?? string.Empty;
+                division.DivisionName = Convert.ToString(reader["name"]) ?? string.Empty;
             }
             conn.Close();
 
-            return employee;
+            return division;
         }
         catch
         {
@@ -78,20 +78,21 @@ public class EmployeeService : IMasterInt<EmployeeBase>
         }
     }
 
-    public int Create(EmployeeBase employee)
+    public string Create(DivisionBase division)
     {
         conn.Open();
         SqlTransaction transaction = conn.BeginTransaction();
         try
         {
-            SqlCommand command = new SqlCommand("INSERT INTO Employee ([name]) output INSERTED.Id VALUES(@EmpName)", conn, transaction);
-            command.Parameters.Add(new SqlParameter("EmpName", employee.EmployeeName));
+            SqlCommand command = new SqlCommand("INSERT INTO Division VALUES(@Code, @Name)", conn, transaction);
+            command.Parameters.Add(new SqlParameter("Code", division.DivisionCode));
+            command.Parameters.Add(new SqlParameter("Name", division.DivisionName is null ? DBNull.Value : division.DivisionName));
 
-            int id = (int)command.ExecuteScalar();
+            command.ExecuteNonQuery();
             transaction.Commit();
             conn.Close();
 
-            return id;
+            return division.DivisionCode;
         }
         catch
         {
@@ -104,15 +105,15 @@ public class EmployeeService : IMasterInt<EmployeeBase>
         }
     }
 
-    public bool Update(EmployeeBase employee)
+    public bool Update(DivisionBase division)
     {
         conn.Open();
         SqlTransaction transaction = conn.BeginTransaction();
         try
         {
-            SqlCommand command = new SqlCommand("Update Employee Set [name] = @EmpName Where id = @Id", conn, transaction);
-            command.Parameters.Add(new SqlParameter("Id", employee.EmployeeId));
-            command.Parameters.Add(new SqlParameter("EmpName", employee.EmployeeName));
+            SqlCommand command = new SqlCommand("Update Division Set [name] = @Name Where code = @Code", conn, transaction);
+            command.Parameters.Add(new SqlParameter("Code", division.DivisionCode));
+            command.Parameters.Add(new SqlParameter("Name", division.DivisionName is null ? DBNull.Value : division.DivisionName));
 
             command.ExecuteNonQuery();
             transaction.Commit();
@@ -131,14 +132,14 @@ public class EmployeeService : IMasterInt<EmployeeBase>
         }
     }
 
-    public bool Delete(int id)
+    public bool Delete(string id)
     {
         conn.Open();
         SqlTransaction transaction = conn.BeginTransaction();
         try
         {
-            SqlCommand command = new SqlCommand("Delete From Employee Where id = @Id", conn, transaction);
-            command.Parameters.Add(new SqlParameter("Id", id));
+            SqlCommand command = new SqlCommand("Delete From Division Where code = @Code", conn, transaction);
+            command.Parameters.Add(new SqlParameter("Code", id));
 
             command.ExecuteNonQuery();
             transaction.Commit();

@@ -10,34 +10,34 @@ using System.Xml.Linq;
 
 namespace TesMandiri.Services;
 
-public class EmployeeService : IMasterInt<EmployeeBase>
+public class IdCardService : IMasterInt<IdCardBase>
 {
     SqlConnection conn;
-    public EmployeeService(IOptions<Setting> setting)
+    public IdCardService(IOptions<Setting> setting)
     {
         conn = new SqlConnection(setting.Value.ConnectionString);
     }
 
-    public List<EmployeeBase> Get()
+    public List<IdCardBase> Get()
     {
         conn.Open();
-        List<EmployeeBase> employees = new();
+        List<IdCardBase> cards = new();
         try
         {
-            SqlCommand command = new SqlCommand("Select id, [name] empName from Employee", conn);
+            SqlCommand command = new SqlCommand("Select number, [description] from IdCard", conn);
             SqlDataReader reader = command.ExecuteReader();
             
             while (reader.Read())
             {
-                EmployeeBase employee = new();
-                employee.EmployeeId = Convert.ToInt32(reader["id"]);
-                employee.EmployeeName = Convert.ToString(reader["empName"]) ?? string.Empty;
+                IdCardBase card = new();
+                card.CardNumber = Convert.ToInt32(reader["number"]);
+                card.CardDescription = Convert.ToString(reader["description"]) ?? string.Empty;
 
-                employees.Add(employee);
+                cards.Add(card);
             }
             conn.Close();
 
-            return employees;
+            return cards;
         }
         catch
         {
@@ -49,24 +49,24 @@ public class EmployeeService : IMasterInt<EmployeeBase>
         }
     }
 
-    public EmployeeBase GetById(int id)
+    public IdCardBase GetById(int id)
     {
         conn.Open();
-        EmployeeBase employee = new();
+        IdCardBase card = new();
         try
         {
-            SqlCommand command = new SqlCommand("Select id, [name] empName from Employee where id = @Id", conn);
-            command.Parameters.Add(new SqlParameter("Id", id));
+            SqlCommand command = new SqlCommand("Select number, [description] from IdCard where number = @Number", conn);
+            command.Parameters.Add(new SqlParameter("Number", id));
 
             SqlDataReader reader = command.ExecuteReader();
             if (reader.Read())
             {
-                employee.EmployeeId = Convert.ToInt32(reader["id"]);
-                employee.EmployeeName = Convert.ToString(reader["empName"]) ?? string.Empty;
+                card.CardNumber = Convert.ToInt32(reader["number"]);
+                card.CardDescription = Convert.ToString(reader["description"]) ?? string.Empty;
             }
             conn.Close();
 
-            return employee;
+            return card;
         }
         catch
         {
@@ -78,20 +78,21 @@ public class EmployeeService : IMasterInt<EmployeeBase>
         }
     }
 
-    public int Create(EmployeeBase employee)
+    public int Create(IdCardBase card)
     {
         conn.Open();
         SqlTransaction transaction = conn.BeginTransaction();
         try
         {
-            SqlCommand command = new SqlCommand("INSERT INTO Employee ([name]) output INSERTED.Id VALUES(@EmpName)", conn, transaction);
-            command.Parameters.Add(new SqlParameter("EmpName", employee.EmployeeName));
+            SqlCommand command = new SqlCommand("INSERT INTO IdCard VALUES(@Number, @Description)", conn, transaction);
+            command.Parameters.Add(new SqlParameter("Number", card.CardNumber));
+            command.Parameters.Add(new SqlParameter("Description", card.CardDescription is null ? DBNull.Value : card.CardDescription));
 
-            int id = (int)command.ExecuteScalar();
+            command.ExecuteNonQuery();
             transaction.Commit();
             conn.Close();
 
-            return id;
+            return card.CardNumber;
         }
         catch
         {
@@ -104,15 +105,15 @@ public class EmployeeService : IMasterInt<EmployeeBase>
         }
     }
 
-    public bool Update(EmployeeBase employee)
+    public bool Update(IdCardBase card)
     {
         conn.Open();
         SqlTransaction transaction = conn.BeginTransaction();
         try
         {
-            SqlCommand command = new SqlCommand("Update Employee Set [name] = @EmpName Where id = @Id", conn, transaction);
-            command.Parameters.Add(new SqlParameter("Id", employee.EmployeeId));
-            command.Parameters.Add(new SqlParameter("EmpName", employee.EmployeeName));
+            SqlCommand command = new SqlCommand("Update IdCard Set [description] = @Description Where number = @number", conn, transaction);
+            command.Parameters.Add(new SqlParameter("Number", card.CardNumber));
+            command.Parameters.Add(new SqlParameter("Description", card.CardDescription is null ? DBNull.Value : card.CardDescription));
 
             command.ExecuteNonQuery();
             transaction.Commit();
@@ -137,7 +138,7 @@ public class EmployeeService : IMasterInt<EmployeeBase>
         SqlTransaction transaction = conn.BeginTransaction();
         try
         {
-            SqlCommand command = new SqlCommand("Delete From Employee Where id = @Id", conn, transaction);
+            SqlCommand command = new SqlCommand("Delete From IdCard Where number = @Id", conn, transaction);
             command.Parameters.Add(new SqlParameter("Id", id));
 
             command.ExecuteNonQuery();

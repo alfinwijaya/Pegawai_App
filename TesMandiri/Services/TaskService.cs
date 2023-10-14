@@ -10,34 +10,34 @@ using System.Xml.Linq;
 
 namespace TesMandiri.Services;
 
-public class EmployeeService : IMasterInt<EmployeeBase>
+public class TaskService : IMasterString<TaskBase>
 {
     SqlConnection conn;
-    public EmployeeService(IOptions<Setting> setting)
+    public TaskService(IOptions<Setting> setting)
     {
         conn = new SqlConnection(setting.Value.ConnectionString);
     }
 
-    public List<EmployeeBase> Get()
+    public List<TaskBase> Get()
     {
         conn.Open();
-        List<EmployeeBase> employees = new();
+        List<TaskBase> tasks = new();
         try
         {
-            SqlCommand command = new SqlCommand("Select id, [name] empName from Employee", conn);
+            SqlCommand command = new SqlCommand("Select code, [name] from Task", conn);
             SqlDataReader reader = command.ExecuteReader();
             
             while (reader.Read())
             {
-                EmployeeBase employee = new();
-                employee.EmployeeId = Convert.ToInt32(reader["id"]);
-                employee.EmployeeName = Convert.ToString(reader["empName"]) ?? string.Empty;
+                TaskBase task = new();
+                task.TaskCode = Convert.ToString(reader["code"]) ?? string.Empty;
+                task.TaskName = Convert.ToString(reader["name"]) ?? string.Empty;
 
-                employees.Add(employee);
+                tasks.Add(task);
             }
             conn.Close();
 
-            return employees;
+            return tasks;
         }
         catch
         {
@@ -49,24 +49,24 @@ public class EmployeeService : IMasterInt<EmployeeBase>
         }
     }
 
-    public EmployeeBase GetById(int id)
+    public TaskBase GetById(string id)
     {
         conn.Open();
-        EmployeeBase employee = new();
+        TaskBase task = new();
         try
         {
-            SqlCommand command = new SqlCommand("Select id, [name] empName from Employee where id = @Id", conn);
-            command.Parameters.Add(new SqlParameter("Id", id));
+            SqlCommand command = new SqlCommand("Select code, [name] from Task where code = @Code", conn);
+            command.Parameters.Add(new SqlParameter("Code", id));
 
             SqlDataReader reader = command.ExecuteReader();
             if (reader.Read())
             {
-                employee.EmployeeId = Convert.ToInt32(reader["id"]);
-                employee.EmployeeName = Convert.ToString(reader["empName"]) ?? string.Empty;
+                task.TaskCode = Convert.ToString(reader["code"]) ?? string.Empty;
+                task.TaskName = Convert.ToString(reader["name"]) ?? string.Empty;
             }
             conn.Close();
 
-            return employee;
+            return task;
         }
         catch
         {
@@ -78,20 +78,21 @@ public class EmployeeService : IMasterInt<EmployeeBase>
         }
     }
 
-    public int Create(EmployeeBase employee)
+    public string Create(TaskBase task)
     {
         conn.Open();
         SqlTransaction transaction = conn.BeginTransaction();
         try
         {
-            SqlCommand command = new SqlCommand("INSERT INTO Employee ([name]) output INSERTED.Id VALUES(@EmpName)", conn, transaction);
-            command.Parameters.Add(new SqlParameter("EmpName", employee.EmployeeName));
+            SqlCommand command = new SqlCommand("INSERT INTO Task VALUES(@Code, @Name)", conn, transaction);
+            command.Parameters.Add(new SqlParameter("Code", task.TaskCode));
+            command.Parameters.Add(new SqlParameter("Name", task.TaskName is null ? DBNull.Value : task.TaskName));
 
-            int id = (int)command.ExecuteScalar();
+            command.ExecuteNonQuery();
             transaction.Commit();
             conn.Close();
 
-            return id;
+            return task.TaskCode;
         }
         catch
         {
@@ -104,15 +105,15 @@ public class EmployeeService : IMasterInt<EmployeeBase>
         }
     }
 
-    public bool Update(EmployeeBase employee)
+    public bool Update(TaskBase task)
     {
         conn.Open();
         SqlTransaction transaction = conn.BeginTransaction();
         try
         {
-            SqlCommand command = new SqlCommand("Update Employee Set [name] = @EmpName Where id = @Id", conn, transaction);
-            command.Parameters.Add(new SqlParameter("Id", employee.EmployeeId));
-            command.Parameters.Add(new SqlParameter("EmpName", employee.EmployeeName));
+            SqlCommand command = new SqlCommand("Update Task Set [name] = @Name Where code = @Code", conn, transaction);
+            command.Parameters.Add(new SqlParameter("Code", task.TaskCode));
+            command.Parameters.Add(new SqlParameter("Name", task.TaskName is null ? DBNull.Value : task.TaskName));
 
             command.ExecuteNonQuery();
             transaction.Commit();
@@ -131,14 +132,14 @@ public class EmployeeService : IMasterInt<EmployeeBase>
         }
     }
 
-    public bool Delete(int id)
+    public bool Delete(string id)
     {
         conn.Open();
         SqlTransaction transaction = conn.BeginTransaction();
         try
         {
-            SqlCommand command = new SqlCommand("Delete From Employee Where id = @Id", conn, transaction);
-            command.Parameters.Add(new SqlParameter("Id", id));
+            SqlCommand command = new SqlCommand("Delete From Task Where code = @Code", conn, transaction);
+            command.Parameters.Add(new SqlParameter("Code", id));
 
             command.ExecuteNonQuery();
             transaction.Commit();

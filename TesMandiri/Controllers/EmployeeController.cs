@@ -8,18 +8,18 @@ namespace TesMandiri.Controllers;
 [Route("master/employee")]
 public class EmployeeController : ControllerBase
 {
-    private readonly IEmployeeService _employeeService;
-    public EmployeeController(IEmployeeService employeeService)
+    private readonly IMasterInt<EmployeeBase> _employeeService;
+    public EmployeeController(IMasterInt<EmployeeBase> employeeService)
     {
         _employeeService = employeeService;
     }
 
     [HttpGet]
-    public IActionResult GetEmployees()
+    public IActionResult Get()
     {
         try
         {
-            List<EmployeeBase> employees = _employeeService.GetEmployee();
+            List<EmployeeBase> employees = _employeeService.Get();
             return Ok(employees);
         }
         catch
@@ -29,11 +29,11 @@ public class EmployeeController : ControllerBase
     }
 
     [HttpGet("{id}")]
-    public IActionResult GetEmployeeById(int id)
+    public IActionResult GetById(int id)
     {
         try
         {
-            var employee = _employeeService.GetEmployeeById(id);
+            var employee = _employeeService.GetById(id);
             if (employee.EmployeeId == 0)
                 return NotFound($"Employee with id {id} doesn't exist");
 
@@ -46,14 +46,14 @@ public class EmployeeController : ControllerBase
     }
 
     [HttpPost]
-    public IActionResult CreateEmployee([FromBody]string name)
+    public IActionResult Create([FromBody]EmployeeBase employee)
     {
         try
         {
-            var id = _employeeService.CreateEmployee(name);
+            var id = _employeeService.Create(employee);
 
-            EmployeeBase employee = new() { EmployeeId = id, EmployeeName = name };
-            return CreatedAtAction(nameof(GetEmployeeById), new { id = id}, employee);
+            EmployeeBase created = new() { EmployeeId = id, EmployeeName = employee.EmployeeName };
+            return CreatedAtAction(nameof(GetById), new { id = id}, created);
         }
         catch
         {
@@ -62,16 +62,16 @@ public class EmployeeController : ControllerBase
     }
 
     [HttpPut("{id}")]
-    public IActionResult UpdateEmployee(int id, EmployeeBase employee)
+    public IActionResult Update(int id, EmployeeBase employee)
     {
         try
         {
-            var check = _employeeService.GetEmployeeById(id);
+            var check = _employeeService.GetById(id);
             if (check.EmployeeId == 0)
                 return NotFound($"Employee with id {id} doesn't exist");
 
             employee.EmployeeId = check.EmployeeId;
-            _employeeService.UpdateEmployee(employee);
+            _employeeService.Update(employee);
 
             return NoContent();
         }
@@ -82,13 +82,20 @@ public class EmployeeController : ControllerBase
     }
 
     [HttpDelete("{id}")]
-    public IActionResult DeleteEmployee(int id)
+    public IActionResult Delete(int id)
     {
-        var check = _employeeService.GetEmployeeById(id);
-        if (check.EmployeeId == 0)
-            return NotFound($"Employee with id {id} doesn't exist");
+        try
+        {
+            var check = _employeeService.GetById(id);
+            if (check.EmployeeId == 0)
+                return NotFound($"Employee with id {id} doesn't exist");
 
-        _employeeService.DeleteEmployee(id);
-        return NoContent();
+            _employeeService.Delete(id);
+            return NoContent();
+        }
+        catch
+        {
+            throw;
+        }
     }
 }

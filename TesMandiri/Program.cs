@@ -14,7 +14,13 @@ var config = new ConfigurationBuilder()
             .Build();
 
 builder.Services.Configure<Setting>(config.GetSection("SQLServer"));
-builder.Services.AddSingleton<IEmployeeService, EmployeeService>();
+builder.Services.AddSingleton<IMasterInt<EmployeeBase>, EmployeeService>();
+builder.Services.AddSingleton<IMasterInt<IdCardBase>, IdCardService>();
+builder.Services.AddSingleton<IMasterString<DivisionBase>, DivisionService>();
+builder.Services.AddSingleton<IMasterString<TaskBase>, TaskService>();
+builder.Services.AddSingleton<IEmployeeCardService, EmployeeCardService>();
+builder.Services.AddSingleton<IDivisionMemberService, DivisionMemberService>();
+
 var app = builder.Build();
 
 app.UseHttpsRedirection();
