@@ -20,6 +20,7 @@ builder.Services.AddSingleton<IMasterString<DivisionBase>, DivisionService>();
 builder.Services.AddSingleton<IMasterString<TaskBase>, TaskService>();
 builder.Services.AddSingleton<IEmployeeCardService, EmployeeCardService>();
 builder.Services.AddSingleton<IDivisionMemberService, DivisionMemberService>();
+builder.Services.AddSingleton<IEmployeeTaskService, EmployeeTaskService>();
 
 var app = builder.Build();
 

@@ -9,5 +9,5 @@ public interface IDivisionMemberService
     bool Create(DivisionMemberDto division);
     bool Update(DivisionMemberDto division);
     bool Delete(string code);
-    bool CheckEmpExist(int id);
+    bool CheckEmpExist(int id, string? code = null);
 }

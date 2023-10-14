@@ -47,7 +47,7 @@ public class DivisionMemberService : IDivisionMemberService
                 }
                 else
                 {
-                    div.DivisionCode = Convert.ToString(reader["DivisionCode"]) ?? string.Empty;
+                    div.DivisionCode = divCode;
                     div.DivisionName = Convert.ToString(reader["DivisionName"]) ?? string.Empty;
                     div.Employee.Add(employee);
 
@@ -89,23 +89,21 @@ public class DivisionMemberService : IDivisionMemberService
 
             while (reader.Read())
             {
-                int i = 0;
+                bool first = true;
                 EmployeeBase employee = new();
 
                 employee.EmployeeId = Convert.ToInt32(reader["EmployeeId"]);
                 employee.EmployeeName = Convert.ToString(reader["EmployeeName"]) ?? string.Empty;
 
-                if (i == 0)
+                if (first)
                 {
                     div.DivisionCode = Convert.ToString(reader["DivisionCode"]) ?? string.Empty;
                     div.DivisionName = Convert.ToString(reader["DivisionName"]) ?? string.Empty;
-                    div.Employee.Add(employee);
-                    i++;
+                    first = false;
                 }
-                else
-                {
-                    div.Employee.Add(employee);
-                }
+                
+                div.Employee.Add(employee);
+                
             }
             conn.Close();
 
@@ -232,19 +230,21 @@ public class DivisionMemberService : IDivisionMemberService
         }
     }
 
-    public bool CheckEmpExist(int id)
+    public bool CheckEmpExist(int id, string? code = null)
     {
         conn.Open();
         SqlTransaction transaction = conn.BeginTransaction();
         try
         {
-            SqlCommand command = new SqlCommand(@"If Exists (Select 1 From DivisionMember Where EmployeeId = @Id)
-                                                    Begin
-                                                        Select 1
-                                                    END
-                                                    ELSE BEGIN Select 0 End
+            SqlCommand command = new SqlCommand(string.Format(
+                    @"
+                    If Exists (Select 1 From DivisionMember Where EmployeeId = @Id {0})
+                    Begin
+                        Select 1
+                    END
+                    ELSE BEGIN Select 0 End
             
-            ", conn, transaction);
+            ", code is not null ? $" And DivisionCode <> '{code}'" : string.Empty), conn, transaction);
             command.Parameters.Add(new SqlParameter("Id", id));
 
             int exist = (int)command.ExecuteScalar();

@@ -9,6 +9,7 @@ public class EmployeeBase
     public int EmployeeId { get; set; }
     public string EmployeeName { get; set; } = string.Empty;
 }
+
 public class EmployeeCard : EmployeeBase
 {
     public IdCardBase Card { get; set; } = new();
@@ -29,4 +30,9 @@ public class EmployeeCardDto : EmployeeDto
 public class EmployeeTask : EmployeeBase
 {
     public List<TaskBase> Tasks { get; set; } = new();
+}
+
+public class EmployeeTaskDto : EmployeeDto
+{
+    public List<TaskDto> Tasks { get; set; } = new();
 }

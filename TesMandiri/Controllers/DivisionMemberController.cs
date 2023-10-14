@@ -114,13 +114,17 @@ public class DivisionMemberController : ControllerBase
             if (string.IsNullOrWhiteSpace(check.DivisionCode))
                 return NotFound($"Division doesn't exist");
 
+            var exist = _divisionMemberService.GetById(code);
+            if (string.IsNullOrWhiteSpace(exist!.DivisionCode))
+                return BadRequest($"Division doesn't have any member yet. Please use create function");
+
             foreach (var employee in division.Employee)
             {
                 var emp = _employeeService.GetById(employee.EmployeeId);
                 if (emp.EmployeeId == 0)
                     return NotFound($"Employee with id {employee.EmployeeId} not found");
 
-                if (_divisionMemberService.CheckEmpExist(employee.EmployeeId))
+                if (_divisionMemberService.CheckEmpExist(employee.EmployeeId, code))
                     return NotFound($"Employee with id {employee.EmployeeId} already belong to other division");
             }
 

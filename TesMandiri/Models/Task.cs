@@ -8,7 +8,7 @@ public class TaskBase
     public string? TaskName { get; set; }
 }
 
-public class Task : TaskBase
+public class TaskDto
 {
-    public List<EmployeeBase> Employee { get; set; } = new();
+    public string TaskCode { get; set; } = string.Empty;
 }
