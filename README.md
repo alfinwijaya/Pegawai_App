@@ -10,3 +10,5 @@ n - n Employee - Task
 
 !important
 Run the create_db.sql and create_table.sql scripts on your localhost server
+
+To access the swagger UI to test the endpoints please follow this link "https://localhost:{port}/swagger/index.html"
