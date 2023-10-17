@@ -1,14 +1,29 @@
-#Pegawai-App
+# Simple Pegawai App
 
-Simple Web API to demonstrate relationship between tables using C# and SQL Server
+> Simple Web API to demonstrate relationship between tables
+
+## Table of contents
+* [General info](#general-info)
+* [Technologies](#technologies)
+* [Setup](#setup)
+
+## General info
 Master table : Employee, IdCard, Division, and Task
 
 Relation:
-1 - 1 Employee - IdCard
-1- n Division - Employee
-n - n Employee - Task
+* 1 - 1 => Employee - IdCard
+* 1- n => Division - Employee
+* n - n => Employee - Task
 
-!important
-Run the create_db.sql and create_table.sql scripts on your localhost server
+## Technologies
+Project is created with:
+* C# 
+* SQL Server
 
-To access the swagger UI to test the endpoints please follow this link "https://localhost:{port}/swagger/index.html"
+## Setup
+To run this project, make sure you have SQL Server installed on your machine:
+```
+Run the scripts that has been provided in create_db.sql and create_table.sql
+```
+
+To access Swagger UI documentation please follow this link https://localhost:{port}/swagger/index.html
