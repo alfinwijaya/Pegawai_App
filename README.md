@@ -23,7 +23,7 @@ Project is created with:
 ## Setup
 To run this project, make sure you have SQL Server installed on your machine:
 ```
-Run the scripts that has been provided in create_db.sql and create_table.sql
+Extract the pegawai_app.dacpac file t get the database
 ```
 
 To access Swagger UI documentation please follow this link https://localhost:{YOUR_PORT}/swagger/index.html
